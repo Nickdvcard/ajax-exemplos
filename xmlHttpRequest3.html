@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset='UTF-8'>
+    <title>XMLHttpRequest #03</title>
+    <link rel='stylesheet' href='css/estilo.css'>
+</head>
+
+<body class="conteudo exercicio">
+    <h1>Estados</h1>
+
+    <script>
+        function ajax(config) {
+            const xhr = new XMLHttpRequest();
+            xhr.open(config.metodo, config.url, true);
+
+            xhr.onreadystatechange = () => {
+                if (xhr.readyState === 4) { // Quando a requisição está concluída
+                    if (xhr.status === 200) {
+                        config.sucesso(xhr.responseXML); // Para tratar XML
+                    } else if (xhr.status >= 400) {
+                        config.erro({
+                            codigo: xhr.status,
+                            texto: xhr.statusText
+                        });
+                    }
+                }
+            };
+
+            xhr.send();
+        }
+
+        // Chamada da função ajax fora da função para evitar loop infinito
+        ajax({
+            url: "dados/estados.xml",
+            metodo: "GET",
+            sucesso(resposta) {
+                console.log(resposta)
+                console.log(typeof(resposta))
+                const estados = resposta.getElementsByTagName('estado');
+
+                const itens = Array.from(estados).reduce((html, estado) => {
+                    return html + `<li>${estado.getAttribute('nome')}</li>`; // Corrigido para usar getAttribute
+                }, ''); // html é o acumulador
+
+                document.body.insertAdjacentHTML('beforeend', `<ul>${itens}</ul>`);
+
+                // estados.forEach(estado => {
+                //     document.body.insertAdjacentHTML('beforeend', 
+                //         `<li>${estado.getAttribute('nome')}</li>`
+                //     )
+                // }); estados é um opbjeto não array aí não funciona
+            },
+            erro(e) {
+                const msg = document.createTextNode(`${e.codigo}: ${e.texto}`);
+                document.body.appendChild(msg);
+            }
+        });
+    </script>
+</body>
+
+</html>
